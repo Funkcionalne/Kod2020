@@ -1,30 +1,43 @@
 module Priprava_CV02 where
 import Test.QuickCheck
 import Text.Show.Functions
-import Data.List(sort)
+import Data.List(sort, nub)
 
 ----------------------------------------------------------------------------------
 
 -- slova dlzky k nad abecedou
 --slova :: [Char] -> Int -> [String]
 slova :: String -> Int -> [String]
-slova abeceda k = undefined
+slova _ 0 = [""]
+slova abeceda k = [ ch:s | s <- slova abeceda (k-1), ch <- abeceda] 
 
 -- slova "01" 3 = ["000","001","010","011","100","101","110","111"]
-pocetSlova abeceda k = undefined
+pocetSlova abeceda k = (length abeceda) ^ k
 
-qchSlova = undefined -- quickCheck(...)
+qchSlova = quickCheck(\abeceda -> \k -> 0 <= k && k <= 10 
+                                        && length abeceda <= 7 
+                                        && length (nub abeceda) == length abeceda 
+                                        ==> pocetSlova abeceda k == length (slova abeceda k)) -- quickCheck(...)
 
 ----------------------------------------------------------------------------------
 
 -- slova dlzky k nad abecedou neobsahujuce rovnake pismenka
 --slovaBezOpakovania :: [Char] -> Int -> [String]
 slovaBezOpakovania :: String -> Int -> [String]
-slovaBezOpakovania abeceda k = undefined
+slovaBezOpakovania _ 0 = [""]
+slovaBezOpakovania abeceda k = [ ch:s | s <- slovaBezOpakovania abeceda (k-1), ch <- abeceda, notElem ch s] 
 
-pocetSlovaBezOpakovania abeceda k = undefined
+pocetSlovaBezOpakovania abeceda k = if k > n 
+                                    then 0 
+                                    else (product [1..n]) `div` (product[1..(n-k)]) 
+                                    where n = length abeceda
 
-qchslovaBezOpakovania = undefined -- quickCheck(...)
+qchslovaBezOpakovania = quickCheck(\abeceda -> \k -> 0 <= k && k <= 10 
+                                        && length abeceda <= 7 
+                                        && length (nub abeceda) == length abeceda 
+                                        ==> pocetSlovaBezOpakovania abeceda k == 
+                                        length (slovaBezOpakovania abeceda k)) -- quickCheck(...)
+
 
 
 
@@ -45,17 +58,34 @@ qchNajviacABCDEF = undefined
 
 -- slova nad abecedou dlzky k, kde susedne pismenka su rozne
 slovaSusedneRozne :: String -> Int -> [String]
-slovaSusedneRozne abeceda k = undefined
+slovaSusedneRozne _ 0 = [""]
+--slovaSusedneRozne _ 1 = [ ch | ch <- abeceda]
+slovaSusedneRozne abeceda k = [ ch:s | s <- slovaSusedneRozne abeceda (k-1), 
+                                        ch <- abeceda, 
+                                        k == 1 || ch /= (head s)]
                                 
-pocetSlovaSusedneRozne abeceda k = undefined
+pocetSlovaSusedneRozne _ 0 = 1
+pocetSlovaSusedneRozne [] _ = 0
+pocetSlovaSusedneRozne abeceda k = n * ((n-1)^(k-1)) where n = length abeceda
 
-qchSlovaSusedneRozne = undefined
+qchSlovaSusedneRozne =  quickCheck(\abeceda -> \k -> 0 <= k && k <= 10 
+                                        && length abeceda <= 7 
+                                        && length (nub abeceda) == length abeceda 
+                                        ==> pocetSlovaSusedneRozne abeceda k == 
+                                        length (slovaSusedneRozne abeceda k)) -- quickCheck(...)
+
 
 
 ----------------------------------------------------------------------------------
 -- slova nad abecedou "ab", ktore neobsahuju aa, teda dve acka za sebou
 slovaBezAA :: Int -> [String]
-slovaBezAA k =  undefined
+slovaBezAA  0 = [ "" ]
+slovaBezAA  1 = [ "a", "b" ]
+slovaBezAA  k = [ 'b':s | s <- slovaBezAA (k-1) ]
+                ++
+                [ 'a':'b':w | w <-slovaBezAA (k-2) ]
+               
+
                 
 pocetSlovaBezAA k = undefined
 
@@ -64,7 +94,12 @@ qchSlovaBezAA = undefined
 ----------------------------------------------------------------------------------
 -- slova nad abecedou "a...", ktore neobsahuju aa, teda dve acka za sebou
 slovaBezAA' :: String -> Int -> [String]
-slovaBezAA' abeceda k = undefined
+slovaBezAA' abeceda  0 = [ "" ]
+slovaBezAA' abeceda  1 = [ [ch] | ch <- abeceda ]
+slovaBezAA' abeceda  k = [ ch:s | s <- slovaBezAA' abeceda (k-1), ch<-abeceda, ch /= 'a' ]
+                         ++
+                        [ 'a':ch:w | w <-slovaBezAA' abeceda (k-2), ch<-abeceda, ch /= 'a' ]
+
 
 pocetSlovaBezAA' k = undefined
 
