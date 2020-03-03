@@ -1,6 +1,7 @@
 module Priprava_CV03_Tree where
 import Test.QuickCheck
 import Tree
+import Data.List(nub)
 
 -- toto bolo na prednaske a neplatilo
 -- qch3 = quickCheck((\x -> \tree -> (isBVS tree) ==> ((find x tree) == (elem x (flat tree))))::Int->BVS Int->Property)
@@ -61,4 +62,62 @@ delete 1 e = Node Nil 4 (Node Nil 7 Nil)
 -- ak sa x nachadza v strome, po delete bude o jeden uzol mensi                             
 -- ak sa x nenachadza v strome po delete
 
-                                
+            
+u = Node Nil 4 (Node Nil 7 Nil)                
+u1 = Node Nil 4 (Node Nil 4 Nil)                
+
+-- v strome su len rovnake hodnoty                                
+isUnival :: (Eq t) => BVS t -> Bool  
+isUnival Nil = True
+isUnival (Node left x right) = 
+        (left == Nil || let (Node _ lx _) = l in x == lx)
+        &&
+        (right == Nil || let (Node _ rx _) = r in x == rx)
+        && isUnival left && isUnival right
+                            
+-- isUnival tree = length (nub (flat tree)) == 1
+
+isUnival Nil = True
+isUnival (Node left value right) = 
+            (left  == Nil || let (Node _ v _) = left in v == value)
+            &&
+            (right == Nil || let (Node _ v _) = right in v == value)
+            && isUnival left && isUnival right
+            
+-- pocet podstromov, ktore su isUnival
+univals :: (Eq t) => BVS t -> Int     
+univals Nil = 0
+univals tree@(Node left value right) = 
+        univals left + univals right +
+        if (isUnival tree) then 1 else 0
+{-
+*Priprava_CV03_Tree> univals u
+1
+*Priprava_CV03_Tree> univals u1
+2        
+-}
+
+univals' :: (Eq t) => BVS t -> Int     
+univals' tree  = let (uC, isU) = univalsAux tree in uC
+
+-- vrati pocet unival podstromov a True, ak je unival
+univalsAux :: (Eq t) => BVS t -> (Int, Bool)
+univalsAux Nil = (0, True)
+univalsAux (Node left value right) = (univalCount, isUnival)
+                where (leftCount, isUnivalLeft)   = univalsAux left
+                      (rightCount, isUnivalRight) = univalsAux right
+                      isUnival = isUnivalLeft && isUnivalRight &&
+                                 (left  == Nil || let (Node _ v _) = left in v == value)
+                                 &&
+                                 (right == Nil || let (Node _ v _) = right in v == value)
+                      univalCount = leftCount + rightCount + if isUnival then  1 else 0
+
+qch9 = quickCheckWith stdArgs{ maxSuccess = 100000 }(
+      (\tree -> (univals tree == univals' tree))::BVS Int->Bool)
+
+
+       
+            
+
+
+

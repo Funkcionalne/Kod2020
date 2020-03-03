@@ -2,14 +2,30 @@ module Streda_CV03_Tree where
 import Test.QuickCheck
 import Tree
 
+e'::BVS Int
+e' = Node (Node Nil 1 Nil) 2 (Node Nil 3 Nil)
+
 -- toto bolo na prednaske a neplatilo
--- qch3 = quickCheck((\x -> \tree -> (isBVS tree) ==> ((find x tree) == (elem x (flat tree))))::Int->BVS Int->Property)
+qch2P = quickCheck((\x -> \tree -> ((find x tree) == (elem x (flat tree))))::Int->BVS Int->Bool)
+qch3 = quickCheck((\x -> \tree -> (isBVS tree) ==> ((find x tree) == (elem x (flat tree))))::Int->BVS Int->Property)
+
+-- velkost stromu je pocet Node uzlov
+size :: BVS t -> Int
+size Nil = 0
+size (Node left val right) = 1 + size left + size right
 
 -- ak je isBVS, potom find x tree je ako hladanie x v splostenom zozname
 qch4 = quickCheckWith stdArgs{ maxSuccess = 100000 } ((\x -> \tree -> (isBVS tree) ==> ((find x tree) == (elem x (flat tree))))::Int->BVS Int->Property)         
 
 insert :: (Ord t) => t -> BVS t -> BVS t
-insert = undefined
+insert val Nil = Node Nil val Nil
+insert val (Node left x right) | x == val = Node left x right
+                               | x > val = (Node (insert val left) x right)
+                               | otherwise = (Node left x (insert val right))
+
+qOnSize = quickCheck((\x -> \tree -> (not (find x tree)) ==> 1 + (size tree) == size (insert x tree))
+        ::Int->BVS Int->Property)
+
 
 -- e = Node Nil 4 (Node Nil 7 Nil)                                                       
 -- insert 1 e = Node (Node Nil 1 Nil) 4 (Node Nil 7 Nil)
@@ -19,9 +35,6 @@ insert = undefined
 -- x sa po inserte urcite v strome nachadza
 -- qch5 = quickCheckWith stdArgs{ maxSuccess = 100000 } 
 
--- velkost stromu je pocet Node uzlov
-size :: BVS t -> Int
-size = undefined
 
 -- velkost stromu po inserte je o jedna vacsia, asi neplati, ak sa x tam uz nachadza
 -- qch6 = quickCheckWith stdArgs{ maxSuccess = 100000 }( ...  )
@@ -35,7 +48,9 @@ size = undefined
 
 -- maximalny v strome, ale musi byt isBVS
 maxBVS                        :: BVS t -> t
-maxBVS = undefined
+maxBVS Nil = undefined
+maxBVS (Node _ val Nil) = val
+maxBVS (Node left val right) = maxBVS right  
 
 -- delete v strome, ale musi byt isBVS
 delete :: (Ord t) => t -> BVS t -> BVS t
@@ -53,3 +68,40 @@ delete 1 e = Node Nil 4 (Node Nil 7 Nil)
 
 -- ak sa x nenachadza v strome po delete
 -- qch10 = quickCheckWith stdArgs{ maxSuccess = 100000 }( ... )
+
+          
+u = Node Nil 4 (Node Nil 7 Nil)                
+u1 = Node Nil 4 (Node Nil 4 Nil)                
+
+-- v strome su len rovnake hodnoty                                
+isUnival :: (Eq t) => BVS t -> Bool  
+isUnival Nil = True
+isUnival (Node left x right) = 
+        (left == Nil || let (Node _ lx _) = left in x == lx)
+        &&
+        (right == Nil || let (Node _ rx _) = right in x == rx)
+        && isUnival left && isUnival right
+
+same [] = True
+same (x:xs) = all ( == x) xs
+
+isUnival' tree = same(flat(tree))
+
+qOnUnival = quickCheck((\tree -> isUnival tree == isUnival' tree)
+        ::BVS Int->Bool)
+        
+        
+uniques :: (Ord t) => BVS t -> Int        
+uniques t = fst(uniquesAux t)
+
+uniquesAux :: (Ord t) => BVS t -> (Int, Bool)        
+uniquesAux Nil = (0, True)
+uniquesAux (Node l x r) = ( u, isunique)
+        where (uniquesl, isuniquel) = uniquesAux l
+              (uniquesr, isuniquer) = uniquesAux r
+              isunique = isuniquel && isuniquer &&
+                    (l == Nil || let (Node _ lx _) = l in x == lx)
+                    &&
+                    (r == Nil || let (Node _ rx _) = r in x == rx)
+              u=   uniquesl +  uniquesr + (if  isunique then 1 else 0)
+
