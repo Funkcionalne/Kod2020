@@ -27,6 +27,7 @@ foldl1' f (x:xs) = foldl f x xs
 -- definujte vas vlastny foldr pomocou foldr1
 foldr''' f z xs = foldr1 f (xs ++ [z])
 
+--foldr1 (\x -> \y -> 10*y +x) ([1..5]++[0])
 -------------------------------------------
 -- scanl je to co foldl, ale so vsetkymi medzivysledkami
 -- scanl f z [a1, ..., an] = [z, f z a1, f (f z a1) a2, ...]
@@ -35,12 +36,14 @@ foldr''' f z xs = foldr1 f (xs ++ [z])
 -- definujte scanl pomocou foldl
 -- definujte scanl pomocou foldl efektivnejsie (napr. pomocou reverse)
 scanl' = undefined
-
+-- foldl (\xs -> \y -> xs ++ [10*y + (head xs)]) [0] [1..5]
+ 
 -- definujte foldl pomocou scanl
 foldl'' = undefined
 
 -- definujte scanr pomocou foldr
 scanr' = undefined
+-- foldr (\x -> \ys -> (10*(head ys) +x):ys) [0] [1..5]
 
 -- definujte foldr pomocou scanr
 foldr'''' = undefined
@@ -65,9 +68,14 @@ maximalny (x:xs) = foldl (\a -> \b -> max a b) x xs
 
 
 -- rozdiel max a minimalneho prvku vo vektore/matici
-maxmin = undefined
 
-maxmin' = undefined
+pom (x:xs) = foldr (\x -> \(mi, ma) -> (min x mi, max x ma)) (x,x) xs
+maxmin :: [Int] -> Int 
+maxmin xs = let (mi, ma) = pom xs in ma-mi
+
+maxmin' :: [[Int]] -> Int 
+maxmin' (r:xss) = uncurry (-) $ foldr (\r -> \(mi, ma) -> foo (pom r) (mi, ma) ) (pom r) xss
+            where foo (a,b) (c,d) = ((min a c), (max b d))
 
 {- --------------------------------------------------------------------
       definujte funkciu priemer :: [Float] -> Float, ktora vypocita aritmeticky zoznamu [Float]
