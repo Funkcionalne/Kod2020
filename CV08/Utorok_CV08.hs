@@ -17,6 +17,16 @@ k = \x -> \y -> x
 
 {-
 co, ak by sme si nevsimli, ze to je K....
+λx.λy.x = "K"
+λx.(K x) = "S"
+S (λx.K) (λx.x) = "I"
+S (λx.K) I = "K"
+S (K K) I
+
+I x = x
+K c x = c
+S f g x = ((f x) (g x))
+---
 λx.λy.x  = K
 λx.(K x) = S
 S (λx.K) (λx.x) = K, I
@@ -32,7 +42,7 @@ false = λx.λy.y
 -}
 
 -- λx.λy.λz.((x z) (y z))
-s = \x -> \y -> \z -> x z (y z)
+s = \x -> \y -> \z -> ((x z) (y z))
 
 
 {- Church zero
@@ -44,8 +54,16 @@ K I
 zero  = k i  
 
 {- Church one
-λf.λx.(f x)
+λf.λx.(f x) -> SKI
+
 na prednaske bolo λx.λy.(y x)- takze to asi bude podobne...
+
+λf.λx.(f x) = ... S
+λf. ((S (λx.f)) (λx.x)) = I
+λf. ((S (λx.f)) I) = ... K
+λf. ((S (K f)) I) = ... 
+S  (λf.(S (K f)) λf.I) = ... K I
+S  (λf.(S (K f)) (K I)) = ... 
 
 λf.λx.(f x) = S
 λf.(S(λx.f)) (λx.x) = I
@@ -79,7 +97,7 @@ one''''   = s (s k)                         -- S (S K) a b
 
 
 one''''' :: Church
-one'''''   = i  
+one'''''   = i    -- (I f) a = f a
 
 
 -- inak to je church's one
@@ -119,10 +137,16 @@ ch_not x     = x false true
 ch_xor       = undefined
 
 {- XOR
+xy ^
 00 0
 01 1
 10 1
 11 0
+
+xor x y = x (not y) y
+TRUE (not y) y = not y
+FALSE (not y) y = y
+
 -}
 -- ch_xor'  x y     = ch_or (ch_and (ch_not x) y) (ch_and (ch_not y) x)
 -- ch_xor'' x y = x (ch_not y) y
@@ -149,7 +173,7 @@ ch_head p  = p (\x y z -> y)
 ch_tail p  = p (\x y z -> z)
 ch_isNil p  = p (\x y z -> x)
 
---omega = \x -> (x x)
+-- omega = \x -> (x x)
 -- bigomega = omega omega
 -- ypsilon = \f x -> (f (x x) f (x x))
 
