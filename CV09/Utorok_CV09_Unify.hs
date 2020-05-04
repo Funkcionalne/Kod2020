@@ -79,9 +79,10 @@ fromStringArgs xs = let (a, xs') = fromString xs in
 
 -- <Term> := digit | Variable | symbol [( <Args> )]
 fromString  :: String -> (Term, String)
-fromString (x:xs)   | isDigit x  = (CN (ord x-48), xs)
+fromString (x:xs)   | isDigit x               = (CN (ord x-48), xs)
 fromString [x]      | isAlpha x && isLower x  = (Functor [x] [], [])
-fromString (x:y:xs) | isAlpha x && isLower x && y == '(' = let (args, xs') = 
-                           fromStringArgs xs in (Functor [x] args, xs')
-fromString (x:xs)   | isAlpha x && isUpper x  = (Var [x], xs)
-fromString  xs      = error ("syntax error: " ++ xs)                                                   
+fromString (x:y:xs) | isAlpha x && isLower x && y == '(' = 
+                                                            let (args, xs') = fromStringArgs xs 
+                                                            in (Functor [x] args, xs')
+fromString (x:xs)   | isAlpha x && isUpper x   = (Var [x], xs)
+fromString  xs                                 = error ("syntax error: " ++ xs)                                                   

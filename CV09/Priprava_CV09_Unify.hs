@@ -3,8 +3,8 @@ import Data.Char
 
 data Term = Var String | 
             CN Int | 
-            Functor String [Term]  -- deriving(Show)
-
+            Functor String [Term]   deriving(Show)
+{-
 instance Show Term where
     show (CN n) = show n
     show (Var name) = name
@@ -12,6 +12,7 @@ instance Show Term where
                                  else 
                                    "(" ++ (show (args!!0))++ (concat [ "," ++ (show (args!!i))  | i <- [1..length args-1] ]) ++ ")" 
 
+-}
 
 type Constraint = (Term, Term)       -- term1 == term2
 type Constraints = [Constraint]
