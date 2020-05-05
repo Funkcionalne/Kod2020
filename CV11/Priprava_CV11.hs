@@ -8,6 +8,7 @@ data LExp = LAMBDA String LExp |
             CON String | CN Int
             deriving(Show, Read, Eq)
 
+-- L -> (L L) | \id.L | id
 lambda   :: Parser LExp
 lambda   =  do { id <- identifier; return (ID id) }
             +++
@@ -37,14 +38,39 @@ morse1   =   do { string ".-"; return "A"}
              do { string "-.."; return "D"}
 
 -------
+-- S -> aSa | bSb | a | b 
 
+pali :: Parser String
+pali = 
+       do { char 'a'; x <- pali; char 'a'; return ('a':(x++['a'])) }
+       `plus`
+       do { char 'b'; x <- pali; char 'b'; return ('a':(x++['b'])) }
+       `plus`
+       do { char 'a'; return "a" }
+       `plus`
+       do { char 'b'; return "b" }
+       `plus`
+       return ""
+
+
+pali1 :: Parser String
+pali1 = 
+       do { ch <- item; x <- pali1; char ch; return (ch:(x++[ch])) }
+       `plus`
+       do { char 'a'; return "a" }
+       `plus`
+       do { char 'b'; return "b" }
+       `plus`
+       return ""
+       
+         
 palindrom    :: Parser String
-palindrom = foldr (\p -> \ps -> p +++ ps) 
+palindrom = foldr (\p -> \ps -> p `plus` ps) 
                   (return "")
                   (
-                   [ do { char i; xs <- palindrom; char i; return ([i] ++ xs ++ [i]) } | i <- ['0'..'9']]
+                   [ do { char i; xs <- palindrom; char i; return ([i] ++ xs ++ [i]) } | i <- ['a'..'z']]
                     ++
-                   [ do {c <- digit; return [c]} ]
+                   [ do {c <- letter; return [c]} ]
                   )
 
 morseCodes = [(".-","A"), ("-...", "B"), ("-.-.","C"), ("-..","D"), (".","E"), ("..-.","F"),
