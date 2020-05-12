@@ -18,6 +18,14 @@ lambda   =  do { id <- identifier; return (ID id) }
             +++
             do { char '\\'; id<-identifier; char '.'; m<-lambda; return (LAMBDA id m) }
 
+-- B -> 0B | 1B | eps
+binConst :: Parser Int
+binConst = do { char '0'; x <- binConst; return (2*x) }
+           +++
+           do { char '1'; x <- binConst; return (2*x+1) }
+           +++
+           return 0
+           
 -----------------
 morse   :: Parser String
 morse   =   (char '.' >>= \_ -> char '.' >>= \_ -> return "A")
